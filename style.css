@@ -1,0 +1,534 @@
+/* Global styles */
+:root {
+    --bg-color: #1a1a2e;
+    --card-color: #2a2a45;
+    --primary-blue: #4a69ff;
+    --text-color: #f0f0f0;
+    --text-muted: #a0a0b0;
+    --green: #28a745;
+    --red: #dc3545;
+    --border-color: #404060;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    margin: 0;
+    padding: 24px;
+    line-height: 1.6;
+}
+
+/* Main layout container */
+.container {
+    max-width: 900px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+/* Header (Logo) */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.header-logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.logo-icon {
+    background-color: var(--primary-blue);
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    font-weight: bold;
+    color: var(--text-color);
+}
+
+.logo-text h1 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.logo-text p {
+    margin: 0;
+    font-size: 14px;
+    color: var(--text-muted);
+}
+
+/* Navigation tabs */
+.nav-tabs {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    margin-bottom: 16px; /* Add some space below tabs */
+}
+
+.tab {
+    padding: 10px 20px; /* Slightly smaller padding */
+    border-radius: 8px;
+    background-color: var(--card-color);
+    color: var(--text-muted);
+    font-weight: 500;
+    cursor: pointer;
+    text-decoration: none;
+    border: 1px solid transparent; /* Add border for smooth transition */
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+.tab:hover {
+     background-color: #3b3b5a;
+     color: var(--text-color);
+}
+
+.tab.active {
+    background-color: var(--primary-blue);
+    color: var(--text-color);
+    border-color: var(--primary-blue);
+}
+
+/* Stat Cards */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); /* Responsive grid */
+    gap: 20px;
+}
+
+.stat-card {
+    background-color: var(--card-color);
+    border-radius: 12px;
+    padding: 20px;
+    border: 1px solid var(--border-color); /* Subtle border */
+}
+
+.stat-card h3 {
+    margin: 0 0 8px 0; /* Add margin bottom */
+    font-size: 14px;
+    color: var(--text-muted);
+    font-weight: 500;
+    text-transform: uppercase; /* Uppercase title */
+}
+
+.stat-card .value {
+    font-size: 28px; /* Slightly smaller */
+    font-weight: bold;
+    margin-top: 8px;
+    color: var(--text-color);
+}
+
+.stat-card .percentage {
+    margin-top: 8px;
+    font-size: 13px; /* Slightly smaller */
+}
+
+.stat-card .percentage.green { color: var(--green); }
+.stat-card .percentage.red { color: var(--red); }
+
+/* Analysis Box */
+.analysis-box {
+    background-color: var(--card-color);
+    border-radius: 12px;
+    padding: 24px;
+    border: 1px solid var(--border-color);
+}
+
+.analysis-box h2 {
+    margin-top: 0;
+    margin-bottom: 20px; /* More space below title */
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.input-tabs {
+    display: flex;
+    margin-bottom: 16px;
+}
+
+.input-tab {
+    padding: 10px 20px;
+    background-color: #3b3b5a;
+    border: 1px solid var(--border-color);
+    border-bottom: none; /* Remove bottom border for active tab effect */
+    color: var(--text-muted);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+.input-tab:hover {
+     background-color: #4a4a6a;
+}
+
+.input-tab.active {
+    background-color: var(--card-color); /* Match card background */
+    color: var(--text-color);
+    border-color: var(--border-color);
+    border-bottom: 1px solid var(--card-color); /* Hide bottom border */
+    position: relative;
+    top: 1px; /* Slight lift effect */
+}
+
+.input-tab:first-child { border-top-left-radius: 8px; }
+.input-tab:last-child { border-top-right-radius: 8px; }
+
+/* Common styles for textarea and input */
+.analysis-box textarea,
+.analysis-box input[type="url"] {
+    width: 100%;
+    box-sizing: border-box;
+    background-color: var(--bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    color: var(--text-color);
+    padding: 12px;
+    font-family: inherit;
+    font-size: 14px;
+    margin-bottom: 16px; /* Add space below input */
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.analysis-box textarea:focus,
+.analysis-box input[type="url"]:focus {
+    outline: none;
+    border-color: var(--primary-blue);
+    box-shadow: 0 0 0 2px rgba(74, 105, 255, 0.3);
+}
+
+.analysis-box textarea {
+    height: 120px;
+    resize: vertical;
+}
+.analysis-box input[type="url"] {
+     height: 48px; /* Match textarea line height better */
+}
+
+
+.submit-button {
+    width: 100%;
+    padding: 12px; /* Slightly smaller padding */
+    margin-top: 8px; /* Reduced margin */
+    background-color: var(--primary-blue);
+    border: none;
+    border-radius: 8px;
+    color: var(--text-color);
+    font-size: 15px; /* Slightly smaller */
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+}
+.submit-button:hover {
+    background-color: #3a59e0; /* Darker blue on hover */
+}
+.submit-button:active {
+     transform: scale(0.98); /* Click effect */
+}
+.submit-button:disabled {
+    background-color: #4a4a6a;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+
+/* --- Styles for Analysis Results Section (Lesson 11) --- */
+
+.analysis-results-box {
+    background-color: var(--card-color);
+    border-radius: 12px;
+    padding: 24px;
+    border: 1px solid var(--border-color);
+    margin-top: 24px; /* Add space above */
+}
+
+.analysis-results-box h2 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--primary-blue); /* Style title */
+}
+
+/* Result Banner */
+.result-banner {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px;
+    border-radius: 8px;
+    margin-bottom: 24px;
+    border-width: 1px;
+    border-style: solid;
+}
+.result-banner .icon {
+    font-size: 24px;
+}
+.result-banner .banner-text strong {
+    display: block;
+    font-size: 16px;
+    margin-bottom: 4px;
+}
+.result-banner .banner-text span {
+    font-size: 13px;
+    opacity: 0.8;
+}
+
+/* Banner Colors */
+.result-banner.status-verified {
+    background-color: rgba(40, 167, 69, 0.1);
+    border-color: rgba(40, 167, 69, 0.3);
+    color: var(--green);
+}
+.result-banner.status-false {
+    background-color: rgba(220, 53, 69, 0.1);
+    border-color: rgba(220, 53, 69, 0.3);
+    color: var(--red);
+}
+.result-banner.status-not-found {
+    background-color: rgba(108, 117, 125, 0.1);
+    border-color: rgba(108, 117, 125, 0.3);
+    color: var(--text-muted);
+}
+
+/* Confidence Score */
+.confidence-score-box {
+    margin-bottom: 24px;
+}
+.confidence-score-box label {
+    display: block;
+    font-size: 14px;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+}
+.progress-bar-container {
+    background-color: var(--bg-color);
+    border-radius: 4px;
+    height: 8px;
+    overflow: hidden; /* Important for border-radius */
+    margin-bottom: 8px;
+}
+.progress-bar {
+    height: 100%;
+    background-color: var(--green); /* Default to green, change based on score */
+    border-radius: 4px;
+    transition: width 0.5s ease-in-out;
+}
+/* Colors for progress bar (optional) */
+.progress-bar.low-confidence { background-color: var(--red); }
+.progress-bar.medium-confidence { background-color: #ffc107; } /* Yellow */
+
+.confidence-percent-label {
+    font-size: 14px;
+    font-weight: 600;
+}
+
+
+/* Details Grid */
+.details-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); /* Responsive columns */
+    gap: 16px 24px; /* Row gap, Column gap */
+    margin-top: 16px;
+}
+
+.detail-item {
+    background-color: rgba(0, 0, 0, 0.1); /* Slightly darker background */
+    padding: 12px;
+    border-radius: 6px;
+}
+
+.detail-item label {
+    display: block;
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+    text-transform: uppercase;
+}
+
+.detail-item span,
+.detail-item a {
+    font-size: 14px;
+    color: var(--text-color);
+    word-break: break-word; /* Wrap long text */
+}
+.detail-item a {
+    color: var(--primary-blue);
+    text-decoration: none;
+}
+.detail-item a:hover {
+    text-decoration: underline;
+}
+
+/* Make URL and Hash span full width */
+.detail-item.detail-full-width {
+    grid-column: 1 / -1; /* Span all columns */
+}
+
+.detail-item .hash {
+    font-family: monospace;
+    font-size: 13px;
+    color: #aaa; /* Lighter hash color */
+}
+.merkle-subtext {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 4px;
+    margin-bottom: 0;
+}
+/* --- End of Analysis Results Styles --- */
+
+
+/* --- Styles for History Page (Lesson 9) --- */
+
+.filter-bar {
+    display: flex;
+    flex-wrap: wrap; /* Allow wrapping on smaller screens */
+    gap: 16px;
+    background-color: var(--card-color);
+    padding: 16px;
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    margin-bottom: 16px; /* Add space below filter */
+}
+
+.filter-bar input,
+.filter-bar select,
+.filter-bar button { /* Include button styles */
+    background-color: var(--bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    color: var(--text-color);
+    padding: 10px 12px; /* Consistent padding */
+    font-family: inherit;
+    font-size: 14px;
+    height: 40px; /* Consistent height */
+    box-sizing: border-box;
+}
+.filter-bar input:focus,
+.filter-bar select:focus {
+    outline: none;
+    border-color: var(--primary-blue);
+    box-shadow: 0 0 0 2px rgba(74, 105, 255, 0.3);
+}
+
+.filter-bar input[type="text"] {
+    flex-grow: 1; /* Make search bar flexible */
+    min-width: 200px; /* Minimum width before wrapping */
+}
+
+.filter-bar select {
+    cursor: pointer;
+    min-width: 150px;
+}
+
+.filter-bar button.export-btn { /* Style for export button */
+    background-color: #3b3b5a;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: background-color 0.2s ease, color 0.2s ease;
+    margin-left: auto; /* Push export button to the right */
+}
+.filter-bar button.export-btn:hover {
+    background-color: #4a4a6a;
+    color: var(--text-color);
+}
+
+
+.history-container {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.history-card {
+    background-color: var(--card-color);
+    border-radius: 8px; /* Slightly smaller radius */
+    padding: 16px 20px; /* Adjusted padding */
+    border: 1px solid var(--border-color);
+    border-left-width: 5px; /* Emphasize status border */
+    border-left-color: var(--text-muted); /* Default border color */
+    transition: box-shadow 0.2s ease;
+}
+.history-card:hover {
+     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* Colors for the status border */
+.history-card.status-verified { border-left-color: var(--green); }
+.history-card.status-false { border-left-color: var(--red); }
+.history-card.status-not-found { border-left-color: var(--text-muted); } /* Explicit class */
+
+.history-card h3 {
+    margin: 0 0 6px 0; /* Adjusted margin */
+    font-size: 16px; /* Slightly smaller */
+    font-weight: 600;
+    color: var(--text-color);
+    word-break: break-word; /* Wrap long titles */
+}
+
+.history-card .details {
+    font-size: 13px; /* Slightly smaller */
+    color: var(--text-muted);
+    margin: 4px 0;
+    word-break: break-word; /* Wrap long details */
+}
+.history-card .details a { /* Style links in details */
+    color: var(--primary-blue);
+    text-decoration: none;
+}
+.history-card .details a:hover {
+    text-decoration: underline;
+}
+
+
+.history-card .hash {
+    font-size: 12px;
+    color: #888; /* Dimmer color */
+    margin: 10px 0 0 0; /* Adjusted margin */
+    font-family: monospace;
+    word-break: break-all; /* Prevent long hashes from overflowing */
+}
+
+.history-card .status-badge {
+    display: inline-block;
+    padding: 3px 10px; /* Adjusted padding */
+    border-radius: 12px;
+    font-size: 11px; /* Slightly smaller */
+    font-weight: 600;
+    margin-bottom: 10px; /* More space below badge */
+    text-transform: uppercase;
+    border-width: 1px;
+    border-style: solid;
+}
+
+.status-badge.verified {
+    background-color: rgba(40, 167, 69, 0.15); /* Slightly darker bg */
+    color: var(--green);
+    border-color: rgba(40, 167, 69, 0.3);
+}
+
+.status-badge.false {
+    background-color: rgba(220, 53, 69, 0.1);
+    color: var(--red);
+     border-color: rgba(220, 53, 69, 0.3);
+}
+
+.status-badge.not-found {
+    background-color: rgba(108, 117, 125, 0.15); /* Use a grey color */
+    color: var(--text-muted);
+     border-color: rgba(108, 117, 125, 0.3);
+}
+
+/* Add styles for loading/error messages in history */
+#history-list p {
+    color: var(--text-muted);
+    text-align: center;
+    padding: 20px;
+    font-style: italic;
+}

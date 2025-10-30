@@ -1,0 +1,4 @@
+# This file holds our secret API keys
+GOOGLE_API_KEY = "AIzaSyCLfWee-MU1H9ovOkMuDPRk0RaNTiKj0JE"
+NEWS_API_KEY = "68d3b2fadeb949f3a6054a446d22b407"
+GEMINI_API_KEY = "AIzaSyBQROTnzFAg1NHNf463LHKpjYRrrJg8gcM"
