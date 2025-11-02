@@ -1,7 +1,19 @@
 # Ignore our secret keys
 backend/config.py
 
-# Ignore Python cache files
-backend/__pycache__/
-# Ignore the SQLite database file
-backend/veri.db
+# Python
+**/__pycache__/
+*.pyc
+
+# Virtual envs
+venv/
+.venv/
+
+# Databases & logs
+backend/*.db
+backend/*.sqlite3
+backend/server.out.log
+backend/server.err.log
+
+# Node/Front assets (generated)
+frontend/assets/*.tmp

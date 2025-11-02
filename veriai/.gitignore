@@ -1,7 +1,0 @@
-# Ignore our secret keys
-backend/config.py
-
-# Ignore Python cache files
-backend/__pycache__/
-# Ignore the SQLite database file
-backend/veri.db

@@ -21,6 +21,37 @@ function switchTab(mode) {
     }
 }
 
+// --- URL helpers ---
+function isProbablyUrl(s) {
+    if (!s) return false;
+    s = s.trim();
+    if (s.length > 2048) return false;
+    const re = /^(?:https?:\/\/)?(?:[\w-]+\.)+[a-z]{2,}(?::\d+)?(?:\/[\S]*)?$/i;
+    return re.test(s);
+}
+function normalizeUrl(u) {
+    if (!u) return u;
+    u = u.trim();
+    if (!/^https?:\/\//i.test(u)) {
+        u = 'https://' + u;
+    }
+    return u;
+}
+
+// --- Small UI helper: animate number changes (e.g., 0% -> 72%) ---
+function animateNumber(el, to, duration = 500) {
+    const text = (el.textContent || '0').replace(/[^0-9]/g, '');
+    const from = parseInt(text || '0', 10);
+    const start = performance.now();
+    const step = (now) => {
+        const t = Math.min(1, (now - start) / duration);
+        const val = Math.round(from + (to - from) * t);
+        el.textContent = `${val}%`;
+        if (t < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+}
+
 // --- NEW/UPDATED Function to display analysis results ---
 function displayAnalysisResult(resultData) {
     const resultsSection = document.getElementById('analysis-results-section');
@@ -54,34 +85,39 @@ function displayAnalysisResult(resultData) {
     let statusIcon = '❓';
     let bannerTitle = 'Rating Unavailable';
     let confidence = geminiConf !== null ? geminiConf : 20; // Use Gemini conf if available
-    let actualConfidence = geminiConf !== null ? geminiConf : 20;
     
     const actualRating = resultData.rating || 'N/A';
     const actualPublisher = resultData.publisher || 'N/A';
     const ratingLower = actualRating.toLowerCase();
-    const TRUE_RATINGS_JS = ['true', 'mostly true', 'correct attribution'];
-    const FALSE_RATINGS_JS = ['false', 'pants on fire', 'mostly false', 'scam', 'fake', 'misleading'];
+const TRUE_RATINGS_JS = ['true', 'mostly true', 'correct attribution', 'accurate', 'correct', 'verified'];
+const FALSE_RATINGS_JS = ['false', 'pants on fire', 'mostly false', 'scam', 'fake', 'incorrect', 'not true', 'debunked'];
 
     confidenceBar.className = 'progress-bar'; // Reset bar color class
 
-    // Determine Status Class based on Google FC result
-    if (TRUE_RATINGS_JS.includes(ratingLower)) {
+    // Prefer server's final_verdict when available.
+    if (resultData.final_verdict === 'VERIFIED_TRUE') {
         statusClass = 'status-verified'; statusIcon = '✅'; bannerTitle = 'Verified as Truthful';
-    } else if (FALSE_RATINGS_JS.includes(ratingLower)) {
+    } else if (resultData.final_verdict === 'FLAGGED_FALSE') {
         statusClass = 'status-false'; statusIcon = '❌'; bannerTitle = 'Flagged as Potentially Misleading';
         confidenceBar.classList.add('low-confidence');
-    } else if (ratingLower === 'not found' || ratingLower === 'api error') {
-        statusClass = 'status-not-found'; statusIcon = '❓';
-        bannerTitle = ratingLower === 'api error' ? 'Analysis Error' : 'No Fact-Checks Found';
-        confidenceBar.classList.add('medium-confidence');
-    } else { // Mixed/Other ratings
-        statusClass = 'status-not-found'; statusIcon = '⚠️'; bannerTitle = 'Rating: Check Details';
-        confidenceBar.classList.add('medium-confidence');
+    } else {
+        // Fallback to Fact Check rating if no clear final verdict.
+        if (TRUE_RATINGS_JS.includes(ratingLower)) {
+            statusClass = 'status-verified'; statusIcon = '✅'; bannerTitle = 'Verified as Truthful';
+        } else if (FALSE_RATINGS_JS.includes(ratingLower)) {
+            statusClass = 'status-false'; statusIcon = '❌'; bannerTitle = 'Flagged as Potentially Misleading';
+            confidenceBar.classList.add('low-confidence');
+        } else if (ratingLower === 'not found' || ratingLower === 'api error') {
+            statusClass = 'status-not-found'; statusIcon = '❓';
+            bannerTitle = ratingLower === 'api error' ? 'Analysis Error' : 'No Fact-Checks Found';
+            confidenceBar.classList.add('medium-confidence');
+        } else {
+            statusClass = 'status-not-found'; statusIcon = '⚠️'; bannerTitle = 'Rating: Check Details';
+            confidenceBar.classList.add('medium-confidence');
+        }
     }
     
-    // **Final Confidence Score Decision** (If Gemini exists, use a composite score)
-    // For simplicity, we just use the Gemini confidence score as the primary one for the display bar.
-    confidence = actualConfidence;
+    // For simplicity, use the Gemini confidence score as the primary one for the display bar.
 
     // --- Update Banner ---
     banner.className = `result-banner ${statusClass}`;
@@ -96,7 +132,7 @@ function displayAnalysisResult(resultData) {
 
     // --- Update Confidence Score ---
     confidenceBar.style.width = `${confidence}%`;
-    confidencePercent.textContent = `${confidence}%`;
+    animateNumber(confidencePercent, Math.max(0, Math.min(100, parseInt(confidence || 0, 10))))
 
     // --- Update Details ---
     headlineEl.textContent = resultData.query_text || 'N/A';
@@ -128,14 +164,27 @@ document.addEventListener("DOMContentLoaded", function() {
 
         if (currentInputMode === 'text') { /* ... handles text input ... */ } else { /* ... handles URL input ... */ }
         
-        // Simplified check (for brevity, assuming detailed validation is done above)
+        // Build payload with URL auto-detection
         let textToAnalyze; 
         if (currentInputMode === 'text') { 
-            textToAnalyze = articleTextarea.value;
-            payload = { article_text: textToAnalyze }; inputSource = `"${textToAnalyze.substring(0, 30)}..."`; lastAnalyzedText = textToAnalyze;
+            const val = (articleTextarea.value || '').trim();
+            if (isProbablyUrl(val)) {
+                const norm = normalizeUrl(val);
+                payload = { article_url: norm };
+                inputSource = norm;
+                lastAnalyzedText = null; // server will return the analyzed_text
+            } else {
+                textToAnalyze = val;
+                payload = { article_text: textToAnalyze };
+                inputSource = `"${(textToAnalyze || '').substring(0, 30)}..."`;
+                lastAnalyzedText = textToAnalyze;
+            }
         } else { 
-            textToAnalyze = articleUrlInput.value;
-            payload = { article_url: textToAnalyze }; inputSource = textToAnalyze;
+            const val = (articleUrlInput.value || '').trim();
+            const norm = normalizeUrl(val);
+            textToAnalyze = norm;
+            payload = { article_url: norm };
+            inputSource = norm;
         }
         
         fetch('/api/analyze', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })

@@ -24,19 +24,28 @@ document.addEventListener("DOMContentLoaded", function() {
             const date = new Date(item.timestamp);
             const formattedDate = date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
 
-            let statusClass = 'not-found'; let cardStatusClass = 'status-not-found';
-            let actualRating = item.rating ? item.rating : 'N/A';
-            const ratingLower = actualRating.toLowerCase();
+            // Prefer server-side final_verdict for status
+            const finalVerdict = item.final_verdict || '';
+            let statusClass = 'not-found';
+            let cardStatusClass = 'status-not-found';
+            let statusText = 'Inconclusive';
 
-            // Truncate long ratings for the badge
-            let statusText = actualRating;
-            if (statusText.length > 30) { statusText = statusText.substring(0, 27) + "..."; }
+            if (finalVerdict === 'VERIFIED_TRUE') {
+                statusClass = 'verified'; cardStatusClass = 'status-verified'; statusText = 'Verified True';
+            } else if (finalVerdict === 'FLAGGED_FALSE') {
+                statusClass = 'false'; cardStatusClass = 'status-false'; statusText = 'Flagged False';
+            } else {
+                // Fallback to Fact Check rating buckets
+                const actualRating = item.rating ? item.rating : 'N/A';
+                const ratingLower = actualRating.toLowerCase();
+                statusText = actualRating;
+                if (statusText.length > 30) { statusText = statusText.substring(0, 27) + '...'; }
+                if (isTrueRating(ratingLower)) { statusClass = 'verified'; cardStatusClass = 'status-verified'; statusText = 'Verified True'; }
+                else if (isFalseRating(ratingLower)) { statusClass = 'false'; cardStatusClass = 'status-false'; statusText = 'Flagged False'; }
+                else if (ratingLower === 'api error') { statusClass = 'not-found'; cardStatusClass = 'status-not-found'; statusText = 'API Error'; }
+                else { statusClass = 'not-found'; cardStatusClass = 'status-not-found'; statusText = 'Inconclusive'; }
+            }
 
-            // Determine badge/border color based on Fact Check API result
-            if (isTrueRating(ratingLower)) { statusClass = 'verified'; cardStatusClass = 'status-verified'; }
-            else if (isFalseRating(ratingLower)) { statusClass = 'false'; cardStatusClass = 'status-false'; }
-            else if (ratingLower === 'api error'){ statusClass = 'not-found'; cardStatusClass = 'status-error'; statusText = 'API Error'; }
-            
             card.classList.add(cardStatusClass);
             const shortHash = item.merkle_root_hash ? item.merkle_root_hash.substring(0, 16) : 'N/A';
             
@@ -45,20 +54,12 @@ document.addEventListener("DOMContentLoaded", function() {
             const geminiConf = item.gemini_confidence;
             let aiFlagHtml = '';
             
-            if (geminiConf !== null) {
-                let aiFlagText = '';
-                let aiFlagColor = '';
-                if (geminiFlag === 1) { // SQLite stores true as 1
-                    aiFlagText = 'Misleading';
-                    aiFlagColor = 'red';
-                } else if (geminiFlag === 0) { // SQLite stores false as 0
-                    aiFlagText = 'Verified by AI';
-                    aiFlagColor = 'green';
-                } else {
-                    aiFlagText = 'AI Unsure';
-                    aiFlagColor = 'muted';
-                }
-                
+            if (geminiConf !== null && geminiConf !== undefined) {
+                const aiFlagText = (geminiFlag === 1 || geminiFlag === true)
+                    ? 'AI: Misleading'
+                    : (geminiFlag === 0 || geminiFlag === false)
+                        ? 'AI: Credible'
+                        : 'AI: Unsure';
                 aiFlagHtml = `
                     <span class="status-badge" style="background-color: var(--card-color); color: var(--text-muted); border-color: var(--border-color);" title="AI Confidence: ${geminiConf}%">
                         ${aiFlagText} (${geminiConf}%)
@@ -69,7 +70,7 @@ document.addEventListener("DOMContentLoaded", function() {
             
             card.innerHTML = `
                 <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <span class="status-badge ${statusClass}" title="${actualRating}">${statusText}</span>
+                    <span class="status-badge ${statusClass}">${statusText}</span>
                     <div style="margin-left: 10px; flex-shrink: 0;">${aiFlagHtml}</div>
                 </div>
                 <h3>${item.query_text || 'N/A'}</h3>
@@ -86,12 +87,17 @@ document.addEventListener("DOMContentLoaded", function() {
         const searchTerm = searchInput.value.toLowerCase();
         const statusValue = statusFilter.value;
         const filteredData = allHistoryData.filter(item => {
-            const textMatch = item.query_text && item.query_text.toLowerCase().includes(searchTerm);
+            const textMatch = (item.query_text || '').toLowerCase().includes(searchTerm);
+            const verdict = item.final_verdict || '';
+            const ratingLower = (item.rating || '').toLowerCase();
             let statusMatch = true;
-            const ratingLower = item.rating ? item.rating.toLowerCase() : '';
-            if (statusValue === 'true') statusMatch = isTrueRating(ratingLower);
-            else if (statusValue === 'false') statusMatch = isFalseRating(ratingLower);
-            else if (statusValue === 'not-found') statusMatch = !isTrueRating(ratingLower) && !isFalseRating(ratingLower);
+            if (statusValue === 'true') {
+                statusMatch = verdict === 'VERIFIED_TRUE' || isTrueRating(ratingLower);
+            } else if (statusValue === 'false') {
+                statusMatch = verdict === 'FLAGGED_FALSE' || isFalseRating(ratingLower);
+            } else if (statusValue === 'not-found') {
+                statusMatch = !(verdict === 'VERIFIED_TRUE' || verdict === 'FLAGGED_FALSE' || isTrueRating(ratingLower) || isFalseRating(ratingLower));
+            }
             return textMatch && statusMatch;
         });
         renderHistory(filteredData);
@@ -115,6 +121,18 @@ document.addEventListener("DOMContentLoaded", function() {
     // Export button listener (same as before)
     const exportButton = document.getElementById('export-button');
     if (exportButton) { exportButton.addEventListener('click', () => { /* ... export logic ... */ }); }
+
+    // Clear history button
+    const clearButton = document.getElementById('clear-button');
+    if (clearButton) {
+        clearButton.addEventListener('click', () => {
+            if (!confirm('This will remove all saved analyses. Continue?')) return;
+            fetch('/api/clear_history', { method: 'POST' })
+                .then(resp => resp.ok ? resp.json() : resp.json().then(e => Promise.reject(e)))
+                .then(() => { allHistoryData = []; historyList.innerHTML = '<p>History cleared.</p>'; })
+                .catch(err => { console.error('Failed to clear history', err); alert('Failed to clear history'); });
+        });
+    }
 
     loadHistory();
 });

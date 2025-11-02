@@ -7,10 +7,15 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <div class="bg-decor">
+      <span></span><span></span><span></span>
+    </div>
     <div class="container">
         <header class="header">
             <div class="header-logo">
-                <div class="logo-icon">V</div>
+                <div class="logo-mark" aria-label="VeriAI">
+<img class="logo-img" src="assets/logo.png" alt="VeriAI logo" loading="eager" decoding="async" onerror="this.onerror=null; this.src='assets/logo-fallback.svg'"/>
+                </div>
                 <div class="logo-text"><h1>VeriAI</h1><p>Misinformation Detection Platform</p></div>
             </div>
         </header>
@@ -27,10 +32,14 @@
                 <option value="not-found">Not Found / API Error</option>
             </select>
             <button id="export-button" class="export-btn">Export</button>
+            <button id="clear-button" class="export-btn" style="margin-left: 0;">Clear History</button>
         </section>
         <section id="history-list" class="history-container">
              <p>Loading history...</p>
         </section>
+        <footer class="footer">
+          <span>VeriAI • Analysis History</span>
+        </footer>
     </div>
     <script src="history.js"></script>
 </body>
