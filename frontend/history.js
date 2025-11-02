@@ -131,7 +131,7 @@ document.addEventListener("DOMContentLoaded", function() {
             
             console.log(`Deleting item with ID: ${itemId}`);
             
-            fetch(`/api/delete_history/${itemId}`, { method: 'DELETE' })
+            fetch(`/api/delete_history/${itemId}`, { method: 'POST' })
                 .then(resp => {
                     console.log(`Delete response status: ${resp.status}`);
                     if (resp.ok) {

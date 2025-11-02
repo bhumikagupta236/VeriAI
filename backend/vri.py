@@ -530,7 +530,7 @@ def get_latest_result():
         else: return jsonify({"status": "empty", "message": "No results yet."})
     except Exception as e: print(f"[Latest Error] {e}"); return jsonify({"error": str(e)}), 500
 
-@app.route('/api/delete_history/<int:item_id>', methods=['DELETE'])
+@app.route('/api/delete_history/<int:item_id>', methods=['POST', 'DELETE'])
 def delete_history_item(item_id):
     """Deletes a specific analysis result by ID."""
     print(f"[Delete Request] Item ID: {item_id}")
