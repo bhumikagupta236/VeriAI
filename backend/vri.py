@@ -530,6 +530,31 @@ def get_latest_result():
         else: return jsonify({"status": "empty", "message": "No results yet."})
     except Exception as e: print(f"[Latest Error] {e}"); return jsonify({"error": str(e)}), 500
 
+@app.route('/api/delete_history/<int:item_id>', methods=['DELETE'])
+def delete_history_item(item_id):
+    """Deletes a specific analysis result by ID."""
+    try:
+        conn = sqlite3.connect(DB_FILE); cursor = conn.cursor()
+        # Get the text_hash before deleting so we can remove it from seen_hashes
+        result = cursor.execute("SELECT text_hash FROM analysis_results WHERE id = ?", (item_id,)).fetchone()
+        if result:
+            text_hash = result[0]
+            cursor.execute("DELETE FROM analysis_results WHERE id = ?", (item_id,))
+            conn.commit()
+            # Remove from seen_hashes to allow re-analysis if needed
+            try:
+                seen_hashes.discard(text_hash)
+            except Exception:
+                pass
+            conn.close()
+            return jsonify({"status": "success", "message": "Item deleted."})
+        else:
+            conn.close()
+            return jsonify({"status": "error", "message": "Item not found."}), 404
+    except Exception as e:
+        print(f"[Delete History Error] {e}")
+        return jsonify({"status": "error", "message": str(e)}), 500
+
 @app.route('/api/clear_history', methods=['POST'])
 def clear_history():
     """Clears all saved analysis results and resets duplicate tracking."""

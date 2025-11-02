@@ -70,8 +70,15 @@ document.addEventListener("DOMContentLoaded", function() {
             
             card.innerHTML = `
                 <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <span class="status-badge ${statusClass}">${statusText}</span>
-                    <div style="margin-left: 10px; flex-shrink: 0;">${aiFlagHtml}</div>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span class="status-badge ${statusClass}">${statusText}</span>
+                        <div style="flex-shrink: 0;">${aiFlagHtml}</div>
+                    </div>
+                    <button class="delete-btn" data-id="${item.id}" title="Delete this item" aria-label="Delete">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2M10 11v6M14 11v6"/>
+                        </svg>
+                    </button>
                 </div>
                 <h3>${item.query_text || 'N/A'}</h3>
                 <p class="details">Publisher: ${item.publisher || 'N/A'} | Analyzed: ${formattedDate}</p>
@@ -114,6 +121,27 @@ document.addEventListener("DOMContentLoaded", function() {
             })
             .catch(error => { console.error("Error loading history:", error); historyList.innerHTML = `<p>Error: ${error}.</p>`; });
     }
+
+    // --- Delete handler with event delegation ---
+    historyList.addEventListener('click', (event) => {
+        const deleteBtn = event.target.closest('.delete-btn');
+        if (deleteBtn) {
+            const itemId = deleteBtn.getAttribute('data-id');
+            if (!confirm('Delete this analysis result?')) return;
+            
+            fetch(`/api/delete_history/${itemId}`, { method: 'DELETE' })
+                .then(resp => resp.ok ? resp.json() : resp.json().then(e => Promise.reject(e)))
+                .then(() => {
+                    // Remove from local data and re-render
+                    allHistoryData = allHistoryData.filter(item => item.id != itemId);
+                    applyFilters();
+                })
+                .catch(err => {
+                    console.error('Failed to delete item', err);
+                    alert('Failed to delete item');
+                });
+        }
+    });
 
     // --- Event Listeners and Initial Load (Same as before) ---
     searchInput.addEventListener('input', applyFilters);
