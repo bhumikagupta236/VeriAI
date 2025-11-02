@@ -533,26 +533,33 @@ def get_latest_result():
 @app.route('/api/delete_history/<int:item_id>', methods=['DELETE'])
 def delete_history_item(item_id):
     """Deletes a specific analysis result by ID."""
+    print(f"[Delete Request] Item ID: {item_id}")
     try:
         conn = sqlite3.connect(DB_FILE); cursor = conn.cursor()
         # Get the text_hash before deleting so we can remove it from seen_hashes
         result = cursor.execute("SELECT text_hash FROM analysis_results WHERE id = ?", (item_id,)).fetchone()
         if result:
             text_hash = result[0]
+            print(f"[Delete] Found item with hash: {text_hash[:8]}...")
             cursor.execute("DELETE FROM analysis_results WHERE id = ?", (item_id,))
             conn.commit()
             # Remove from seen_hashes to allow re-analysis if needed
             try:
                 seen_hashes.discard(text_hash)
-            except Exception:
-                pass
+                print(f"[Delete] Removed hash from seen_hashes")
+            except Exception as e:
+                print(f"[Delete] Warning: Could not remove from seen_hashes: {e}")
             conn.close()
+            print(f"[Delete] Successfully deleted item {item_id}")
             return jsonify({"status": "success", "message": "Item deleted."})
         else:
             conn.close()
+            print(f"[Delete] Item {item_id} not found in database")
             return jsonify({"status": "error", "message": "Item not found."}), 404
     except Exception as e:
         print(f"[Delete History Error] {e}")
+        import traceback
+        traceback.print_exc()
         return jsonify({"status": "error", "message": str(e)}), 500
 
 @app.route('/api/clear_history', methods=['POST'])

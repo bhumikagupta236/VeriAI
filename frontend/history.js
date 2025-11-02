@@ -129,16 +129,29 @@ document.addEventListener("DOMContentLoaded", function() {
             const itemId = deleteBtn.getAttribute('data-id');
             if (!confirm('Delete this analysis result?')) return;
             
+            console.log(`Deleting item with ID: ${itemId}`);
+            
             fetch(`/api/delete_history/${itemId}`, { method: 'DELETE' })
-                .then(resp => resp.ok ? resp.json() : resp.json().then(e => Promise.reject(e)))
-                .then(() => {
+                .then(resp => {
+                    console.log(`Delete response status: ${resp.status}`);
+                    if (resp.ok) {
+                        return resp.json();
+                    } else {
+                        return resp.text().then(text => {
+                            console.error('Delete failed with response:', text);
+                            throw new Error(`Server error: ${resp.status} - ${text}`);
+                        });
+                    }
+                })
+                .then((data) => {
+                    console.log('Delete successful:', data);
                     // Remove from local data and re-render
                     allHistoryData = allHistoryData.filter(item => item.id != itemId);
                     applyFilters();
                 })
                 .catch(err => {
-                    console.error('Failed to delete item', err);
-                    alert('Failed to delete item');
+                    console.error('Failed to delete item:', err);
+                    alert(`Failed to delete item: ${err.message}`);
                 });
         }
     });
