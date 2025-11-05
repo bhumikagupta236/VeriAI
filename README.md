@@ -82,7 +82,7 @@ FACT_CHECK_API_KEY = "your_api_key_here"
 python app.py
 
 
-Then open http://localhost:5000
+Then open http://127.0.0.1:5001
  in your browser.
 
 🌈 Example Use
